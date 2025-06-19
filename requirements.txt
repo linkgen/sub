@@ -2,3 +2,4 @@ requests
 pycryptodome
 colorama
 flask
+gunicorn
