@@ -119,9 +119,9 @@ def run_campaign_loop_once():
 
             # ✅ Send milestone alert if passed new 1000s
             milestone = (coins // 1000) * 1000
-            if milestone > last_milestone_sent[0]:
-                last_milestone_sent[0] = milestone
-                send_telegram(f"🎉 Coins just reached *{coins}*! 🪙 New milestone passed ✅")
+if milestone != last_milestone_sent[0]:
+    last_milestone_sent[0] = milestone
+    send_telegram(f"🎉 Coins just reached *{coins}*! 🪙 New milestone passed ✅")
 
             print(
                 Fore.GREEN + Style.BRIGHT + f"✅ [{campaign_type.upper()}] ID: {campaign_data['id']}"
