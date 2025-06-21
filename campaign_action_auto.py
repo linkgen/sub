@@ -5,12 +5,12 @@ import time
 from Crypto.Cipher import AES
 from colorama import Fore, Style, init
 
-init(autoreset=True)  # Enables color auto-reset
+init(autoreset=True)
 
 # ========== Telegram Setup ==========
 YOUR_BOT_TOKEN = "8014670303:AAEhi9_ajm8rZvu_LKUmBTMkIZNYnkxypok"
 YOUR_CHAT_ID = "7742052478"
-last_milestone_sent = [0]  # To track last milestone sent (e.g., 1000, 2000)
+last_milestone_sent = [-1]  # So it always sends on first valid milestone
 
 def send_telegram(msg):
     try:
@@ -91,7 +91,7 @@ def run_campaign_loop_once():
                 timestamp = float(data.get("current_timestamp", 0))
                 if cid and duration and timestamp:
                     campaign_data = {"id": cid, "duration": duration, "timestamp": timestamp}
-                    break  # found a valid campaign
+                    break
 
         if not campaign_data:
             print(Fore.RED + "[!] No valid campaign found, retrying...\n")
@@ -102,7 +102,6 @@ def run_campaign_loop_once():
         hexed = plain.encode("ascii").hex()
         token = encrypt_aes_cbc(hexed, key_hex, iv_hex)
 
-        # Prepare POST request
         post_url = "https://sub.tubeforces.com/api/campaign/v3/campaigns/action/"
         post_data = {
             "action_multiplier": False,
@@ -117,11 +116,11 @@ def run_campaign_loop_once():
         if post_resp.status_code == 201:
             coins = post_resp.json().get("user_details", {}).get("coins", 0)
 
-            # ✅ Send milestone alert if passed new 1000s
+            # 🎯 New milestone check (fix: allows alert again after coin drop)
             milestone = (coins // 1000) * 1000
-if milestone != last_milestone_sent[0]:
-    last_milestone_sent[0] = milestone
-    send_telegram(f"🎉 Coins just reached *{coins}*! 🪙 New milestone passed ✅")
+            if milestone != last_milestone_sent[0]:
+                last_milestone_sent[0] = milestone
+                send_telegram(f"🎉 Coins just reached *{coins}*! 🪙 New milestone passed ✅")
 
             print(
                 Fore.GREEN + Style.BRIGHT + f"✅ [{campaign_type.upper()}] ID: {campaign_data['id']}"
@@ -133,3 +132,8 @@ if milestone != last_milestone_sent[0]:
 
     except Exception as e:
         print(Fore.RED + f"[!] Error: {str(e)}")
+
+# Optional: loop it
+# while True:
+#     run_campaign_loop_once()
+#     time.sleep(8)
